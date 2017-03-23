@@ -10,13 +10,14 @@ import java.util.Scanner;
 import static networks.XORnetwork.Out;
 import static networks.XORnetwork.in_data;
 import static networks.XORnetwork.out_data;
+import plus.JSON.JSONproperty;
 import plus.math.Matrix;
 
 /**
  *
  * @author Colin
  */
-public class MatrixNetwork implements NeuralNetwork{
+public class MatrixNetwork implements NeuralNetwork, JSONproperty{
 
     private double bias = 1;
     private int size = 0;
@@ -29,76 +30,6 @@ public class MatrixNetwork implements NeuralNetwork{
     
     private NetworkTopology topology;
     private ActivationFunction activation;
-    
-    public static void main(String[] args){
-        Out("XOR (2-2-1) Neural Network");
-        
-        MatrixNetwork net = new MatrixNetwork(
-                NetworkTopology.Construct(2, 1, 2),
-                ActivationFunction.tanh
-        );
-        net.Randomize();
-        //boolean trained = SBPtrainer.Train(net, in_data, in_data, 500, 2000, 0.1, 0.1);
-        //Out("Network was trained: "+trained);
-        
-        int epochs = 500;
-        int iterations = 2000;
-        double accuracy = 0.1;
-        for(int e = 0; e < epochs; e++){
-            //Randomize weights
-            net.Randomize();
-            
-            //Train network
-            for(int i = 0; i < iterations; i++){
-                int ind = rng.nextInt(in_data.length);
-                double[] in = in_data[ind];
-                double out = out_data[ind];
-
-                net.Backpropagate(in, new double[]{out}, 0.1);
-            }
-
-            //Test network
-            double teztAccuracy = 0;
-            for(int i = 0; i < in_data.length; i++){
-                double[] y = net.Feed(in_data[i]).GetData();
-                double a =(Math.round(Math.abs(y[0] - out_data[i]) * 100.0) / 100.0 );
-                teztAccuracy += a;
-                
-            }
-            teztAccuracy /= in_data.length;
-        
-            //If bad, resume epoch
-            if(teztAccuracy < accuracy){
-                Out("Network successfully trained after "+(e+1)+" epochs to an accuracy of: "+((1-teztAccuracy)*100)+"%");
-                break;
-            }
-            else if(e == epochs-1){
-                Out("Network failed to be trained to accuracy("+accuracy+")"+". Current accuracy: "+((1-teztAccuracy)*100)+"%");
-            }
-        }
-        
-        Scanner s = new Scanner(System.in);
-        Out("Try network with: comma separated input. Type \"quit\" to stop testing");
-        while(true){
-            String in = s.nextLine().trim().toLowerCase();
-            if(in.equals("quit")){
-                break;
-            }
-            else{
-                String[] ins = in.split(",");
-                double one = 0; double two = 0;
-                for(int i = 0; i < Math.min(2, ins.length); i++){
-                    if(i == 0)
-                        one = Double.parseDouble(ins[i]);
-                    else
-                        two = Double.parseDouble(ins[i]);
-                }
-                double[] o = net.Feed(new double[]{one, two}).GetData();
-                double ro = (Math.round(o[0] * 100.0) / 100.0);
-                Out("Calculated result: " +ro);
-            }
-        }
-    }
     
     //TODO make activation function matter
     public MatrixNetwork(NetworkTopology topology, ActivationFunction fn){
@@ -127,6 +58,13 @@ public class MatrixNetwork implements NeuralNetwork{
         
         size = this.weights.length;
         
+    }
+    
+    public Matrix[] GetWeights(){
+        return weights;
+    }
+    public Matrix[] GetBiases(){
+        return biases;
     }
     
     public static Random rng = new Random(); 
@@ -240,6 +178,28 @@ public class MatrixNetwork implements NeuralNetwork{
         //4.08 * (Math.cosh(0.6*x) * Math.cosh(0.6*x)) / ((Math.cosh(1.2 * x) + 1) * (Math.cosh(1.2 * x) + 1))
         double r = 4.08 * (Math.cosh(0.6*x) * Math.cosh(0.6*x)) / ((Math.cosh(1.2 * x) + 1) * (Math.cosh(1.2 * x) + 1));
         return r;
+    }
+ 
+    @Override
+    public String ToJSON() {
+        StringBuilder s = new StringBuilder();
+        s.append("{\"bias\":"+this.bias+", \"layers\": [");
+        
+        for(int i = 0; i < this.weights.length; i++){
+            s.append(((i != 0)?",":"")+"{");
+            
+            s.append("\"weight\":");
+            s.append(this.weights[i].toString());
+            s.append(",");
+            
+            s.append("\"bias\":");
+            s.append(this.biases[i].toString());
+            
+            s.append("}");
+        }
+        
+        s.append("]}");
+        return s.toString();
     }
     
 }

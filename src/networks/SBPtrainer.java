@@ -6,6 +6,7 @@
 package networks;
 
 import java.util.Random;
+import plus.system.Debug;
 
 /**
  *
@@ -15,6 +16,8 @@ public class SBPtrainer {
  
     public static boolean Train(NeuralNetwork net, double[][] input, double[][] output, int epochs, int iterations, double accuracy, double learningRate){
         for(int e = 0; e < epochs; e++){
+            Debug.Log("--- Starting epoch "+e);
+            
             //Randomize network weights
             net.Randomize();
             
@@ -45,6 +48,32 @@ public class SBPtrainer {
         }
         
         return false;
+    }
+    
+    public static boolean Validate(NeuralNetwork net, double accuracy, double[][] validInput, double[][] validOutput){
+        float acc = 0;
+                    
+        for(int k= 0; k < validInput.length; k++){
+            double[] in = validInput[k];
+            double[] vout = validOutput[k];
+            
+            double[] rout = net.Feed(in).GetData();
+            
+            double teztAccuracy = 0;
+            for(int i = 0; i < in.length; i++){
+                double a = 0;
+                for(int j = 0; j < vout.length; j++){
+                    a += Math.abs(vout[j] - rout[j]);
+                }
+                teztAccuracy += (a / vout.length);
+            }
+            teztAccuracy /= in.length;
+            acc += teztAccuracy;
+        }
+        
+        acc /= validInput.length;
+        
+        return acc <= accuracy;
     }
     
     public static Random rng = new Random(); 
