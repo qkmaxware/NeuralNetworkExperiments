@@ -5,6 +5,7 @@
  */
 package networks;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -41,6 +42,20 @@ public class XORnetwork {
     //output
     public double zy;
     public double y;
+    
+    public String toString(){
+        return Arrays.toString(new String[]{
+            "I1-H1: "+w1_11,
+            "I1-H2: "+w1_12,
+            "I2-H1: "+w1_21,
+            "I2-H2: "+w1_22,
+            "B-H1: "+w1_b1,
+            "B-H2: "+w1_b2,
+            "H1-O: "+w2_11,
+            "H2-0: "+w2_21,
+            "B-O: "+w2_b1
+        });
+    }
     
     public static Random rng = new Random(); 
     
@@ -120,6 +135,8 @@ public class XORnetwork {
                 Out("Network failed to be trained to accuracy("+accuracy+")"+". Current accuracy: "+((1-teztAccuracy)*100)+"%");
             }
         }
+        
+        System.out.println(net);
         
         Scanner s = new Scanner(System.in);
         Out("Try network with: comma separated input. Type \"quit\" to stop testing");
